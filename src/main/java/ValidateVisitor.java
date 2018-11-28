@@ -1,5 +1,6 @@
 import algebra.*;
 
+import java.util.List;
 import java.util.Map;
 
 public class ValidateVisitor extends CalculatorBaseVisitor<AlgebraNode> {
@@ -8,6 +9,11 @@ public class ValidateVisitor extends CalculatorBaseVisitor<AlgebraNode> {
 
     public ValidateVisitor(Map<String, DataType> variableTypes) {
         this.variableTypes = variableTypes;
+    }
+
+    @Override
+    public AlgebraNode visitCalculate(CalculatorParser.CalculateContext ctx) {
+        return visit(ctx.plusOrMinus());
     }
 
     @Override
@@ -49,5 +55,21 @@ public class ValidateVisitor extends CalculatorBaseVisitor<AlgebraNode> {
     public AlgebraNode visitVariable(CalculatorParser.VariableContext ctx) {
         final String variable = ctx.ID().getText();
         return new VariableNode(variableTypes.get(variable), variable);
+    }
+
+    @Override
+    public AlgebraNode visitFunction(CalculatorParser.FunctionContext ctx) {
+        List<CalculatorParser.PlusOrMinusContext> inputs = ctx.plusOrMinus();
+        String funcName = ctx.func().getText();
+        switch (funcName) {
+            case "sqrt":
+                assert inputs.size() == 1;
+                return new SqrtFunctionNode(visit(inputs.get(0)));
+            case "log":
+                assert inputs.size() == 1;
+                return new LogFunctionNode(visit(inputs.get(0)));
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 }

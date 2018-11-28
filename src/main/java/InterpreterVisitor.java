@@ -1,4 +1,6 @@
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class InterpreterVisitor extends CalculatorBaseVisitor<Object> {
 
@@ -6,6 +8,11 @@ public class InterpreterVisitor extends CalculatorBaseVisitor<Object> {
 
     public InterpreterVisitor(Map<String, Object> variables) {
         this.variables = variables;
+    }
+
+    @Override
+    public Object visitCalculate(CalculatorParser.CalculateContext ctx) {
+        return visit(ctx.plusOrMinus());
     }
 
     @Override
@@ -100,6 +107,27 @@ public class InterpreterVisitor extends CalculatorBaseVisitor<Object> {
 
     @Override
     public Object visitVariable(CalculatorParser.VariableContext ctx) {
-        return variables.get(ctx.ID().getText());
+        Object value = variables.get(ctx.ID().getText());
+        assert value != null;
+        return value;
+    }
+
+    @Override
+    public Object visitFunction(CalculatorParser.FunctionContext ctx) {
+        List<CalculatorParser.PlusOrMinusContext> inputs = ctx.plusOrMinus();
+        List<Object> inputValues = inputs.stream()
+                .map(in -> (Double) visit(in))
+                .collect(Collectors.toList());
+        String funcName = ctx.func().getText();
+        switch (funcName) {
+            case "sqrt":
+                assert inputs.size() == 1;
+                return Math.sqrt((Double) inputValues.get(0));
+            case "log":
+                assert inputs.size() == 1;
+                return Math.log((Double) inputValues.get(0));
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 }

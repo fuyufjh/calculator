@@ -11,6 +11,11 @@ MULT  : '*';
 DIV   : '/';
 LPAR  : '(';
 RPAR  : ')';
+COMMA : ',';
+
+input
+    : plusOrMinus EOF             # Calculate
+    ;
 
 plusOrMinus
     : plusOrMinus PLUS multOrDiv  # Plus
@@ -34,4 +39,7 @@ atom
     | INT                   # Int
     | ID                    # Variable
     | LPAR plusOrMinus RPAR # Braces
+    | func LPAR plusOrMinus (COMMA plusOrMinus)* RPAR # Function
     ;
+
+func: 'sqrt' | 'log' ;

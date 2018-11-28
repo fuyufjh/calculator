@@ -13,7 +13,7 @@ public class Launcher {
 
     public static void main(String[] args) throws Exception {
 
-        final String expr = "a + 2*3 - 2/x";
+        final String expr = "a + 2*3 - 2/x + log(x+1)";
         final Map<String, DataType> variableTypes = ImmutableMap.of(
                 "a", DataType.LONG,
                 "x", DataType.DOUBLE);
@@ -25,7 +25,7 @@ public class Launcher {
         CalculatorLexer lexer = new CalculatorLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         CalculatorParser parser = new CalculatorParser(tokens);
-        ParseTree root = parser.plusOrMinus();
+        ParseTree root = parser.input();
 
         {
             Object result = solveByInterpreter(root, variables);
