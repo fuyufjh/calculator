@@ -23,14 +23,43 @@ public class Launcher {
         CalculatorParser parser = new CalculatorParser(tokens);
         ParseTree root = parser.input();
 
+        for (int t = 0; t < 10; t++) {
+            doTest(root, variableTypes, variables);
+        }
+    }
+
+    private static void doTest(ParseTree root, List<DataType> variableTypes, List<Object> variables) throws Exception {
+        final int repeat = 1_000_000;
+
         {
             Object result = solveByInterpreter(root, variables);
             System.out.println("Result: " + result + " (" + result.getClass() + ")");
         }
+
+        {
+            long beginTime = System.nanoTime();
+            for (int i = 0; i < repeat; i++) {
+                solveByInterpreter(root, variables);
+            }
+            long endTime = System.nanoTime();
+            System.out.println("Repeat for " + repeat + " times takes " + (endTime - beginTime) + " ns");
+        }
+
         {
             ExpressionEvaluator evaluator = solveByCodeGen_Compile(root, variableTypes);
             Object result = solveByCodeGen_Execute(evaluator, variables);
             System.out.println("Result: " + result + " (" + result.getClass() + ")");
+        }
+
+        {
+            ExpressionEvaluator evaluator = solveByCodeGen_Compile(root, variableTypes);
+
+            long beginTime = System.nanoTime();
+            for (int i = 0; i < repeat; i++) {
+                Object result = solveByCodeGen_Execute(evaluator, variables);
+            }
+            long endTime = System.nanoTime();
+            System.out.println("Repeat for " + repeat + " times takes " + (endTime - beginTime) + " ns");
         }
     }
 
