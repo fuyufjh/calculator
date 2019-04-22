@@ -7,7 +7,9 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.codehaus.janino.ExpressionEvaluator;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Launcher {
 
@@ -15,7 +17,6 @@ public class Launcher {
 
         final String expr = "var0 + 2*3 - 2/var1 + log(var1+1)";
         final List<DataType> variableTypes = ImmutableList.of(DataType.LONG, DataType.DOUBLE);
-        final List<Object> variables = ImmutableList.of(10L, 3.1415);
 
         CharStream input = CharStreams.fromString(expr);
         CalculatorLexer lexer = new CalculatorLexer(input);
@@ -23,43 +24,43 @@ public class Launcher {
         CalculatorParser parser = new CalculatorParser(tokens);
         ParseTree root = parser.input();
 
-        for (int t = 0; t < 10; t++) {
-            doTest(root, variableTypes, variables);
+        Random random = new Random();
+
+        final int repeat = 10;
+        final int testSize = 1000000;
+
+        for (int t = 0; t < repeat; t++) {
+            final List<List<Object>> variablesList = new ArrayList<>(testSize);
+            for (int i = 0; i < testSize; i++) {
+                final List<Object> variables = ImmutableList.of(random.nextLong(), random.nextDouble());
+                variablesList.add(variables);
+            }
+            doTest(root, variableTypes, variablesList);
         }
     }
 
-    private static void doTest(ParseTree root, List<DataType> variableTypes, List<Object> variables) throws Exception {
-        final int repeat = 1_000_000;
+    private static void doTest(ParseTree root, List<DataType> variableTypes, List<List<Object>> variablesList) throws Exception {
 
-        {
-            Object result = solveByInterpreter(root, variables);
-            System.out.println("Result: " + result + " (" + result.getClass() + ")");
-        }
+        System.out.println("------------------------------------------------");
 
         {
             long beginTime = System.nanoTime();
-            for (int i = 0; i < repeat; i++) {
+            for (List<Object> variables : variablesList) {
                 solveByInterpreter(root, variables);
             }
             long endTime = System.nanoTime();
-            System.out.println("Repeat for " + repeat + " times takes " + (endTime - beginTime) + " ns");
-        }
-
-        {
-            ExpressionEvaluator evaluator = solveByCodeGen_Compile(root, variableTypes);
-            Object result = solveByCodeGen_Execute(evaluator, variables);
-            System.out.println("Result: " + result + " (" + result.getClass() + ")");
+            System.out.println("[ITERATE] Run for " + variablesList.size() + " times takes " + (endTime - beginTime) + " ns");
         }
 
         {
             ExpressionEvaluator evaluator = solveByCodeGen_Compile(root, variableTypes);
 
             long beginTime = System.nanoTime();
-            for (int i = 0; i < repeat; i++) {
-                Object result = solveByCodeGen_Execute(evaluator, variables);
+            for (List<Object> variables : variablesList) {
+                solveByCodeGen_Execute(evaluator, variables);
             }
             long endTime = System.nanoTime();
-            System.out.println("Repeat for " + repeat + " times takes " + (endTime - beginTime) + " ns");
+            System.out.println("[COMPILE] Run for " + variablesList.size() + " times takes " + (endTime - beginTime) + " ns");
         }
     }
 
