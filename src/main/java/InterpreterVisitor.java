@@ -4,9 +4,9 @@ import java.util.stream.Collectors;
 
 public class InterpreterVisitor extends CalculatorBaseVisitor<Object> {
 
-    private final Map<String, Object> variables;
+    private final List<Object> variables;
 
-    public InterpreterVisitor(Map<String, Object> variables) {
+    public InterpreterVisitor(List<Object> variables) {
         this.variables = variables;
     }
 
@@ -107,7 +107,8 @@ public class InterpreterVisitor extends CalculatorBaseVisitor<Object> {
 
     @Override
     public Object visitVariable(CalculatorParser.VariableContext ctx) {
-        Object value = variables.get(ctx.ID().getText());
+        final int varId = Integer.valueOf(ctx.ID().getText().substring(3)); // 'var123'
+        Object value = variables.get(varId);
         assert value != null;
         return value;
     }

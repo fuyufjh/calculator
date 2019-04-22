@@ -3,11 +3,11 @@ package algebra;
 public class VariableNode extends LeafNode implements AlgebraNode {
 
     private final DataType type;
-    private final String name;
+    private final int varId;
 
-    public VariableNode(DataType type, String name) {
+    public VariableNode(DataType type, int varId) {
         this.type = type;
-        this.name = name;
+        this.varId = varId;
     }
 
     @Override
@@ -17,6 +17,6 @@ public class VariableNode extends LeafNode implements AlgebraNode {
 
     @Override
     public String generateCode() {
-        return name;
+        return "var" + varId;
     }
 }

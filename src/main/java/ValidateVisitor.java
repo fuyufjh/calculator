@@ -5,9 +5,9 @@ import java.util.Map;
 
 public class ValidateVisitor extends CalculatorBaseVisitor<AlgebraNode> {
 
-    private final Map<String, DataType> variableTypes;
+    private final List<DataType> variableTypes;
 
-    public ValidateVisitor(Map<String, DataType> variableTypes) {
+    public ValidateVisitor(List<DataType> variableTypes) {
         this.variableTypes = variableTypes;
     }
 
@@ -53,8 +53,8 @@ public class ValidateVisitor extends CalculatorBaseVisitor<AlgebraNode> {
 
     @Override
     public AlgebraNode visitVariable(CalculatorParser.VariableContext ctx) {
-        final String variable = ctx.ID().getText();
-        return new VariableNode(variableTypes.get(variable), variable);
+        final int varId = Integer.valueOf(ctx.ID().getText().substring(3));
+        return new VariableNode(variableTypes.get(varId), varId);
     }
 
     @Override
